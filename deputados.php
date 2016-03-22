@@ -96,6 +96,7 @@ function get_metas()
 							)
 							),
 						array ( 'label' => 'Partido', 'slug'=>'deputado_partido' ,'info' =>  'Nenhum Partido Informado', 'html' => array ('tag'=> 'select', 'options' => array(
+						                                array ( 'value' => '' , 'content' => 'Selecione' ),
 										array ( 'value' => 'PMDB' , 'content' => 'PARTIDO DO MOVIMENTO DEMOCRÁTICO BRASILEIRO' ) ,
 										array ( 'value' => 'PTB' , 'content' => 'PARTIDO DO MOVIMENTO DEMOCRÁTICO BRASILEIRO' ) ,
 										array ( 'value' => 'PDT' , 'content' => 'PARTIDO DEMOCRÁTICO TRABALHISTA' ) ,
@@ -174,6 +175,8 @@ function deputados_meta_box()
 	add_meta_box('Deputado-meta-box', 'Informações Complementares', 'display_Deputado_meta_box', 'deputados', 'normal', 'high');
 }
 
+
+
 function display_deputado_meta_box($object, $box)
 { 
 	$metas = get_metas();
@@ -191,10 +194,11 @@ function display_deputado_meta_box($object, $box)
 				<br>
 				<select name="<?php echo $meta['slug'] ?>">
 				<?php
-
+setlocale(LC_ALL, "en_US.utf8");
 				foreach ($meta['html']['options'] as $option) {
+$content = iconv("utf-8", "ascii//TRANSLIT", $option['content']);
 					?>
-						<option value="<?php echo $option['value'] ?>" <?php echo esc_html(get_post_meta($object->ID, $meta['slug'] , true), 1) === $option['value'] ? 'selected' : ''; ?> ><?php echo $option['content'] ?></option>
+						<option value="<?php echo $option['value'] ?>" <?php echo esc_html(get_post_meta($object->ID, $meta['slug'] , true), 1) === $option['value'] ? 'selected' : ''; ?> ><?php echo ucwords(strtolower($content)) ?></option>
 						<?php
 				}
 			?>
@@ -285,17 +289,17 @@ function action_custom_columns_content($column_id, $post_id)
 
 // pages and search system
 function userpage_rewrite_add_var( $vars ) {
-	$vars[] = 'deputados';
+	$vars[] = 'busca';
 	return $vars;
 }
 add_filter( 'query_vars', 'userpage_rewrite_add_var' );
 
 // Create the rewrites
 function userpage_rewrite_rule() {
-	add_rewrite_tag( '%deputados%', '([^&]+)' );
+	add_rewrite_tag( '%busca%', '([^&]+)' );
 	add_rewrite_rule(
-			'^deputados',
-			'index.php?deputados',
+			'^busca',
+			'index.php?busca',
 			'top'
 			);
 }
@@ -304,7 +308,7 @@ add_action('init','userpage_rewrite_rule');
 // Catch the URL and redirect it to a template file
 function userpage_rewrite_catch() {
 	global $wp_query;
-	if ( array_key_exists( 'deputados', $wp_query->query_vars ) ) {
+	if ( array_key_exists( 'busca', $wp_query->query_vars ) ) {
 		include ( ABSPATH . 'wp-content/plugins/deputados/deputados_list.php');
 		exit;
 	}
